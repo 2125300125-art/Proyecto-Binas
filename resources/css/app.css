@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../views";
+@source "../../node_modules/flowbite";
+
+@layer base {
+	table {
+		@apply text-slate-900;
+	}
+
+	a.border-slate-300 {
+		@apply text-slate-700;
+	}
+}
