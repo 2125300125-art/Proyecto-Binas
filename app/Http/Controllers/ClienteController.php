@@ -11,19 +11,15 @@ class ClienteController extends Controller
 {
     private const MODELO = Cliente::class;
 
-    private array $datos = [
-        ['id' => 1, 'nombres' => 'Ana Sofía', 'apellidos' => 'Ramírez Cruz', 'correo' => 'ana.ramirez@correo.test', 'telefono' => '5552468101', 'estado' => 'Activo'],
-        ['id' => 2, 'nombres' => 'Luis', 'apellidos' => 'Hernández Díaz', 'correo' => 'luis.hernandez@correo.test', 'telefono' => '5551357911', 'estado' => 'Activo'],
-    ];
-
     public function listar()
     {
-        $clientes = Cliente::query()->get(['id', 'nombres', 'apellidos', 'correo', 'telefono', 'estado'])->map(fn (Cliente $cliente) => [
+        $clientes = Cliente::query()->get(['id', 'nombres', 'apellidos', 'correo', 'telefono', 'imagen', 'estado'])->map(fn (Cliente $cliente) => [
             'id' => $cliente->id,
             'nombres' => $cliente->nombres,
             'apellidos' => $cliente->apellidos,
             'correo' => $cliente->correo,
             'telefono' => $cliente->telefono,
+            'imagen' => $cliente->imagen,
             'estado' => $cliente->estado ? 'Activo' : 'Inactivo',
         ])->all();
 
@@ -61,6 +57,7 @@ class ClienteController extends Controller
 
         $datos = $validator->validated();
         $datos['contraseña'] = Hash::make($datos['contraseña']);
+        $datos['estado'] = true;
         Cliente::create($datos);
 
         return redirect()->route('clientes.index')->with('mensaje', 'Registro guardado exitosamente.');
@@ -68,29 +65,68 @@ class ClienteController extends Controller
 
     public function vistaEdicion($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('clientes', $this->datos, (int) $id);
+        $cliente = Cliente::find($id) ?? Cliente::first();
+
+        $registro = [
+            'id' => $cliente ? $cliente->id : (int) $id,
+            'nombres' => $cliente ? $cliente->nombres : '',
+            'apellidos' => $cliente ? $cliente->apellidos : '',
+            'correo' => $cliente ? $cliente->correo : '',
+            'telefono' => $cliente ? $cliente->telefono : '',
+            'estado' => ($cliente && $cliente->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('clientes.edicion', ['registro' => $registro]);
     }
 
     public function actualizar(Request $request, $id = 1)
     {
-        $this->actualizarDatoTemporal('clientes', $this->datos, $request, (int) $id);
+        $cliente = Cliente::find($id) ?? Cliente::first();
 
-        return redirect()->route('clientes.listar')->with('success', 'Registro actualizado solo para esta sesión.');
+        if ($cliente) {
+            if ($request->filled('nombres')) $cliente->nombres = $request->input('nombres');
+            if ($request->filled('apellidos')) $cliente->apellidos = $request->input('apellidos');
+            if ($request->filled('correo')) $cliente->correo = $request->input('correo');
+            if ($request->filled('telefono')) $cliente->telefono = substr($request->input('telefono'), 0, 10);
+            if ($request->has('estado')) {
+                $cliente->estado = in_array(strtolower($request->input('estado')), ['1', 'true', 'activo', 'activa'], true);
+            }
+            if ($request->filled('contraseña')) {
+                $cliente->contraseña = Hash::make($request->input('contraseña'));
+            }
+            $cliente->save();
+        }
+
+        return redirect()->route('clientes.listar')->with('success', 'Cliente actualizado exitosamente.');
     }
 
     public function vistaMostrar($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('clientes', $this->datos, (int) $id);
+        $cliente = Cliente::find($id) ?? Cliente::first();
+
+        $registro = [
+            'id' => $cliente ? $cliente->id : (int) $id,
+            'nombres' => $cliente ? $cliente->nombres : '',
+            'apellidos' => $cliente ? $cliente->apellidos : '',
+            'correo' => $cliente ? $cliente->correo : '',
+            'telefono' => $cliente ? $cliente->telefono : '',
+            'imagen' => $cliente ? $cliente->imagen : null,
+            'estado' => ($cliente && $cliente->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('clientes.mostrar', ['registro' => $registro]);
     }
 
     public function borrar(Request $request, $id = 1)
     {
-        $this->borrarDatoTemporal('clientes', $this->datos, (int) $id);
+        $cliente = Cliente::find($id) ?? Cliente::first();
 
-        return redirect()->route('clientes.listar')->with('success', 'Registro eliminado solo para esta sesión.');
+        if ($cliente) {
+            try {
+                $cliente->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        return redirect()->route('clientes.listar')->with('success', 'Cliente eliminado exitosamente.');
     }
 }

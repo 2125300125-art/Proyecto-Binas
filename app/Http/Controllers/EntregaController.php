@@ -16,7 +16,18 @@ class EntregaController extends Controller
 
     public function listar()
     {
-        return view('entregas.listado', ['entregas' => $this->datosTemporales('entregas', $this->datos)]);
+        $entregas = Entrega::query()->with(['pedido.cliente', 'repartidor', 'direccion.cliente'])->get()->map(fn (Entrega $entrega) => [
+            'id' => $entrega->id,
+            'pedido' => '#' . $entrega->pedido_id . ' — ' . $entrega->pedido->cliente->nombres . ' ' . $entrega->pedido->cliente->apellidos,
+            'repartidor' => $entrega->repartidor->nombres . ' ' . $entrega->repartidor->apellidos,
+            'direccion' => $entrega->direccion->calle . ' ' . $entrega->direccion->numero . ', ' . $entrega->direccion->colonia . ', ' . $entrega->direccion->ciudad,
+            'fecha' => $entrega->fecha,
+            'hora' => $entrega->hora,
+            'imagen' => $entrega->imagen,
+            'estado' => $entrega->estado ? 'Activa' : 'Inactiva',
+        ])->all();
+
+        return view('entregas.listado', compact('entregas'));
     }
 
     public function vistaFormulario()

@@ -7,7 +7,7 @@
     <div class="overflow-x-auto rounded-md border border-slate-200 bg-white"><table class="w-full text-left text-sm"><thead class="bg-slate-100 text-xs uppercase text-slate-600"><tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Nombre</th><th class="px-4 py-3">Correo</th><th class="px-4 py-3">Acciones</th></tr></thead><tbody>
     @forelse ($users as $registro)
         <tr class="border-t border-slate-200"><td class="px-4 py-3">{{ $registro['id'] }}</td><td class="px-4 py-3">{{ $registro['name'] }}</td><td class="px-4 py-3">{{ $registro['email'] }}</td><td class="flex gap-3 px-4 py-3"><a class="text-cyan-700" href="{{ route('users.mostrar', $registro['id']) }}">Ver</a><a class="text-blue-700" href="{{ route('users.editar', $registro['id']) }}">Editar</a><form method="POST" action="{{ route('users.borrar', $registro['id']) }}">@csrf @method('DELETE')<button class="text-red-700" type="submit">Eliminar</button></form></td></tr>
-    @empty<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No hay usuarios de prueba.</td></tr>@endforelse
+    @empty<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No hay usuarios registrados.</td></tr>@endforelse
     </tbody></table></div>
 </section>
 @endsection

@@ -20,6 +20,7 @@ class CategoriaController extends Controller
         $categorias = Categoria::query()->get(['id', 'nombre', 'estado'])->map(fn (Categoria $categoria) => [
             'id' => $categoria->id,
             'nombre' => $categoria->nombre,
+            'imagen' => $categoria->imagen,
             'estado' => $categoria->estado ? 'Activa' : 'Inactiva',
         ])->all();
 

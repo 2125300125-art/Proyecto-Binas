@@ -41,6 +41,15 @@
                 <a href="{{ route('productos.listar') }}" class="flex items-center justify-between rounded-xl bg-slate-700/70 p-4 text-sm font-semibold text-white hover:bg-slate-700">
                     <span>Catálogo de productos</span><span class="text-cyan-300">→</span>
                 </a>
+                <a href="{{ route('categorias.listar') }}" class="flex items-center justify-between rounded-xl bg-slate-700/70 p-4 text-sm font-semibold text-white hover:bg-slate-700">
+                    <span>Listado de categorías</span><span class="text-cyan-300">→</span>
+                </a>
+                <a href="{{ route('marcas.listar') }}" class="flex items-center justify-between rounded-xl bg-slate-700/70 p-4 text-sm font-semibold text-white hover:bg-slate-700">
+                    <span>Listado de marcas</span><span class="text-cyan-300">→</span>
+                </a>
+                <a href="{{ route('presentaciones.listar') }}" class="flex items-center justify-between rounded-xl bg-slate-700/70 p-4 text-sm font-semibold text-white hover:bg-slate-700">
+                    <span>Listado de presentaciones</span><span class="text-cyan-300">→</span>
+                </a>
             </div>
         </div>
     </div>

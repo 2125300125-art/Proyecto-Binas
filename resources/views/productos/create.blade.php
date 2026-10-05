@@ -3,6 +3,19 @@
 @section('contenido')
 <section class="mx-auto max-w-3xl space-y-5">
     <div><p class="text-sm font-semibold uppercase text-cyan-700">Catálogo e inventario</p><h1 class="mt-1 text-2xl font-bold">Nuevo producto</h1></div>
+    @if ($marcas->isEmpty() || $presentaciones->isEmpty())
+        <div class="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+            <p class="font-semibold">Faltan datos del catálogo para guardar este producto.</p>
+            <ul class="mt-2 list-inside list-disc space-y-1">
+                @if ($marcas->isEmpty())
+                    <li>No hay marcas registradas. <a class="font-semibold underline" href="{{ route('marcas.crear') }}">Registrar una marca</a>.</li>
+                @endif
+                @if ($presentaciones->isEmpty())
+                    <li>No hay presentaciones registradas. <a class="font-semibold underline" href="{{ route('presentaciones.crear') }}">Registrar una presentación</a>.</li>
+                @endif
+            </ul>
+        </div>
+    @endif
     <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" class="grid gap-4 rounded-md border border-slate-200 bg-white p-6 sm:grid-cols-2">
         @csrf
         <label class="grid gap-1 text-sm font-medium text-slate-700 sm:col-span-2">Nombre
@@ -56,7 +69,7 @@
             <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="rounded-md border border-slate-300 px-3 py-2">
             @error('imagen') <span class="text-danger text-sm text-red-600">{{ $message }}</span> @enderror
         </label>
-        <div class="flex gap-3 sm:col-span-2"><button class="rounded-md bg-cyan-600 px-4 py-2 font-semibold text-white" type="submit">Guardar producto</button><a class="rounded-md border border-slate-300 px-4 py-2" href="{{ route('productos.index') }}">Cancelar</a></div>
+        <div class="flex gap-3 sm:col-span-2"><button class="rounded-md bg-cyan-600 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" type="submit" @disabled($marcas->isEmpty() || $presentaciones->isEmpty())>Guardar producto</button><a class="rounded-md border border-slate-300 px-4 py-2" href="{{ route('productos.index') }}">Cancelar</a></div>
     </form>
 </section>
 @endsection

@@ -16,7 +16,19 @@ class DireccionController extends Controller
 
     public function listar()
     {
-        return view('direcciones.listado', ['direcciones' => $this->datosTemporales('direcciones', $this->datos)]);
+        $direcciones = Direccion::query()->with('cliente')->get()->map(fn (Direccion $direccion) => [
+            'id' => $direccion->id,
+            'cliente' => $direccion->cliente->nombres . ' ' . $direccion->cliente->apellidos,
+            'calle' => $direccion->calle,
+            'numero' => $direccion->numero,
+            'colonia' => $direccion->colonia,
+            'ciudad' => $direccion->ciudad,
+            'codigo_postal' => $direccion->codigo_postal,
+            'imagen' => $direccion->imagen,
+            'estado' => $direccion->estado ? 'Activa' : 'Inactiva',
+        ])->all();
+
+        return view('direcciones.listado', compact('direcciones'));
     }
 
     public function vistaFormulario()

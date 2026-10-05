@@ -16,7 +16,18 @@ class ProductoPedidoController extends Controller
 
     public function listar()
     {
-        return view('productos_pedido.listado', ['productos_pedido' => $this->datosTemporales('productos_pedido', $this->datos)]);
+        $productos_pedido = ProductoPedido::query()->with(['pedido.cliente', 'producto'])->get()->map(fn (ProductoPedido $detalle) => [
+            'id' => $detalle->id,
+            'pedido' => '#' . $detalle->pedido_id . ' — ' . $detalle->pedido->cliente->nombres . ' ' . $detalle->pedido->cliente->apellidos,
+            'producto' => $detalle->producto->nombre,
+            'cantidad' => $detalle->cantidad,
+            'precio' => number_format((float) $detalle->precio, 2),
+            'descuento' => number_format((float) $detalle->descuento, 2),
+            'imagen' => $detalle->imagen ?: $detalle->producto->imagen,
+            'estado' => $detalle->estado ? 'Activo' : 'Inactivo',
+        ])->all();
+
+        return view('productos_pedido.listado', compact('productos_pedido'));
     }
 
     public function vistaFormulario()

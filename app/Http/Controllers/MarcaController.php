@@ -20,6 +20,7 @@ class MarcaController extends Controller
         $marcas = Marca::query()->get(['id', 'nombre', 'estado'])->map(fn (Marca $marca) => [
             'id' => $marca->id,
             'nombre' => $marca->nombre,
+            'imagen' => $marca->imagen,
             'estado' => $marca->estado ? 'Activa' : 'Inactiva',
         ])->all();
 

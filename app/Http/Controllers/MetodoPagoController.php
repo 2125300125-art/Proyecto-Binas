@@ -16,7 +16,15 @@ class MetodoPagoController extends Controller
 
     public function listar()
     {
-        return view('metodos_pago.listado', ['metodos_pago' => $this->datosTemporales('metodos_pago', $this->datos)]);
+        $metodos_pago = MetodoPago::query()->get()->map(fn (MetodoPago $metodo) => [
+            'id' => $metodo->id,
+            'nombre' => $metodo->nombre,
+            'descripcion' => $metodo->descripcion,
+            'imagen' => $metodo->imagen,
+            'estado' => $metodo->estado ? 'Activo' : 'Inactivo',
+        ])->all();
+
+        return view('metodos_pago.listado', compact('metodos_pago'));
     }
 
     public function vistaFormulario()

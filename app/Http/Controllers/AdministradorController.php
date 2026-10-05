@@ -34,7 +34,18 @@ class AdministradorController extends Controller
 
     public function listar()
     {
-        return view('administradores.listado', ['administradores' => $this->datosTemporales('administradores', $this->datos)]);
+        $administradores = Administrador::query()->with('rol')->get()->map(fn (Administrador $administrador) => [
+            'id' => $administrador->id,
+            'nombre' => $administrador->nombre,
+            'apellidos' => $administrador->apellidos,
+            'correo' => $administrador->correo,
+            'usuario' => $administrador->usuario,
+            'rol' => $administrador->rol->nombre,
+            'imagen' => $administrador->imagen,
+            'estado' => $administrador->estado ? 'Activo' : 'Inactivo',
+        ])->all();
+
+        return view('administradores.listado', compact('administradores'));
     }
 
     public function vistaFormulario()

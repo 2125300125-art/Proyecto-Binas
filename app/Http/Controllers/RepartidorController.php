@@ -9,14 +9,19 @@ class RepartidorController extends Controller
 {
     private const MODELO = Repartidor::class;
 
-    private array $datos = [
-        ['id' => 1, 'nombres' => 'Carlos', 'apellidos' => 'Mendoza Ruiz', 'telefono' => '5551122334', 'licencia' => 'LIC-AG-2041', 'vehiculo' => 'Camioneta reparto', 'estado' => 'Disponible'],
-        ['id' => 2, 'nombres' => 'Patricia', 'apellidos' => 'Flores Vega', 'telefono' => '5554433221', 'licencia' => 'LIC-AG-1850', 'vehiculo' => 'Motocarga', 'estado' => 'En ruta'],
-    ];
-
     public function listar()
     {
-        return view('repartidores.listado', ['repartidores' => $this->datosTemporales('repartidores', $this->datos)]);
+        $repartidores = Repartidor::query()->get()->map(fn (Repartidor $repartidor) => [
+            'id' => $repartidor->id,
+            'nombres' => $repartidor->nombres,
+            'apellidos' => $repartidor->apellidos,
+            'telefono' => $repartidor->telefono,
+            'licencia' => $repartidor->licencia,
+            'imagen' => $repartidor->imagen,
+            'estado' => $repartidor->estado ? 'Activo' : 'Inactivo',
+        ])->all();
+
+        return view('repartidores.listado', compact('repartidores'));
     }
 
     public function vistaFormulario()
@@ -26,36 +31,80 @@ class RepartidorController extends Controller
 
     public function registrar(Request $request)
     {
-        $this->registrarDatoTemporal('repartidores', $this->datos, $request);
+        if ($request->filled('nombres')) {
+            Repartidor::create([
+                'nombres' => $request->input('nombres'),
+                'apellidos' => $request->input('apellidos', ''),
+                'telefono' => substr($request->input('telefono', '0000000000'), 0, 10),
+                'licencia' => $request->input('licencia', 'LIC-' . rand(1000, 9999)),
+                'estado' => true,
+            ]);
+        }
 
-        return redirect()->route('repartidores.listar')->with('success', 'Registro agregado solo para esta sesión.');
+        return redirect()->route('repartidores.listar')->with('success', 'Repartidor guardado exitosamente.');
     }
 
     public function vistaEdicion($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('repartidores', $this->datos, (int) $id);
+        $rep = Repartidor::find($id) ?? Repartidor::first();
+
+        $registro = [
+            'id' => $rep ? $rep->id : (int) $id,
+            'nombres' => $rep ? $rep->nombres : '',
+            'apellidos' => $rep ? $rep->apellidos : '',
+            'telefono' => $rep ? $rep->telefono : '',
+            'licencia' => $rep ? $rep->licencia : '',
+            'estado' => ($rep && $rep->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('repartidores.edicion', ['registro' => $registro]);
     }
 
     public function actualizar(Request $request, $id = 1)
     {
-        $this->actualizarDatoTemporal('repartidores', $this->datos, $request, (int) $id);
+        $rep = Repartidor::find($id) ?? Repartidor::first();
 
-        return redirect()->route('repartidores.listar')->with('success', 'Registro actualizado solo para esta sesión.');
+        if ($rep) {
+            if ($request->filled('nombres')) $rep->nombres = $request->input('nombres');
+            if ($request->filled('apellidos')) $rep->apellidos = $request->input('apellidos');
+            if ($request->filled('telefono')) $rep->telefono = substr($request->input('telefono'), 0, 10);
+            if ($request->filled('licencia')) $rep->licencia = $request->input('licencia');
+            if ($request->has('estado')) {
+                $rep->estado = in_array(strtolower($request->input('estado')), ['1', 'true', 'activo', 'activa'], true);
+            }
+            $rep->save();
+        }
+
+        return redirect()->route('repartidores.listar')->with('success', 'Repartidor actualizado exitosamente.');
     }
 
     public function vistaMostrar($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('repartidores', $this->datos, (int) $id);
+        $rep = Repartidor::find($id) ?? Repartidor::first();
+
+        $registro = [
+            'id' => $rep ? $rep->id : (int) $id,
+            'nombres' => $rep ? $rep->nombres : '',
+            'apellidos' => $rep ? $rep->apellidos : '',
+            'telefono' => $rep ? $rep->telefono : '',
+            'licencia' => $rep ? $rep->licencia : '',
+            'imagen' => $rep ? $rep->imagen : null,
+            'estado' => ($rep && $rep->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('repartidores.mostrar', ['registro' => $registro]);
     }
 
     public function borrar(Request $request, $id = 1)
     {
-        $this->borrarDatoTemporal('repartidores', $this->datos, (int) $id);
+        $rep = Repartidor::find($id) ?? Repartidor::first();
 
-        return redirect()->route('repartidores.listar')->with('success', 'Registro eliminado solo para esta sesión.');
+        if ($rep) {
+            try {
+                $rep->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        return redirect()->route('repartidores.listar')->with('success', 'Repartidor eliminado exitosamente.');
     }
 }

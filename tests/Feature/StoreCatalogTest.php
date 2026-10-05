@@ -88,7 +88,21 @@ class StoreCatalogTest extends TestCase
 
         $producto = Producto::query()->where('nombre', 'Garrafón de agua')->firstOrFail();
         $this->assertNotNull($producto->imagen);
+        $this->assertSame($producto->id . '.jpg', basename($producto->imagen));
         Storage::disk('public')->assertExists($producto->imagen);
+    }
+
+    public function test_product_form_explains_when_a_required_catalog_record_is_missing(): void
+    {
+        Categoria::create(['nombre' => 'Agua']);
+        Presentacion::create(['nombre' => 'Garrafón de 20 litros']);
+
+        $this->get(route('productos.create'))
+            ->assertOk()
+            ->assertSee('No hay marcas registradas.')
+            ->assertSee(route('marcas.crear'))
+            ->assertSee('Guardar producto')
+            ->assertSee('disabled', false);
     }
 
     public function test_invalid_input_returns_to_the_form_with_errors_and_old_values(): void

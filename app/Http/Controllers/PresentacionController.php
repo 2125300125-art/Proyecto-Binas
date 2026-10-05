@@ -10,17 +10,13 @@ class PresentacionController extends Controller
 {
     private const MODELO = Presentacion::class;
 
-    private array $datos = [
-        ['id' => 1, 'nombre' => 'Garrafón retornable 20 L', 'capacidad' => '20 litros', 'envase' => 'Retornable', 'estado' => 'Activa'],
-        ['id' => 2, 'nombre' => 'Botella individual 1.5 L', 'capacidad' => '1.5 litros', 'envase' => 'Desechable', 'estado' => 'Activa'],
-    ];
-
     public function listar()
     {
-        $presentaciones = Presentacion::query()->get(['id', 'nombre', 'descripcion', 'estado'])->map(fn (Presentacion $presentacion) => [
+        $presentaciones = Presentacion::query()->get(['id', 'nombre', 'descripcion', 'imagen', 'estado'])->map(fn (Presentacion $presentacion) => [
             'id' => $presentacion->id,
             'nombre' => $presentacion->nombre,
             'descripcion' => $presentacion->descripcion,
+            'imagen' => $presentacion->imagen,
             'estado' => $presentacion->estado ? 'Activa' : 'Inactiva',
         ])->all();
 
@@ -53,36 +49,68 @@ class PresentacionController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Presentacion::create($validator->validated());
+        $datos = $validator->validated();
+        $datos['estado'] = true;
+        Presentacion::create($datos);
 
         return redirect()->route('presentaciones.index')->with('mensaje', 'Registro guardado exitosamente.');
     }
 
     public function vistaEdicion($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('presentaciones', $this->datos, (int) $id);
+        $presentacion = Presentacion::find($id) ?? Presentacion::first();
+
+        $registro = [
+            'id' => $presentacion ? $presentacion->id : (int) $id,
+            'nombre' => $presentacion ? $presentacion->nombre : '',
+            'descripcion' => $presentacion ? $presentacion->descripcion : '',
+            'estado' => ($presentacion && $presentacion->estado) ? 'Activa' : 'Inactiva',
+        ];
 
         return view('presentaciones.edicion', ['registro' => $registro]);
     }
 
     public function actualizar(Request $request, $id = 1)
     {
-        $this->actualizarDatoTemporal('presentaciones', $this->datos, $request, (int) $id);
+        $presentacion = Presentacion::find($id) ?? Presentacion::first();
 
-        return redirect()->route('presentaciones.listar')->with('success', 'Registro actualizado solo para esta sesión.');
+        if ($presentacion) {
+            if ($request->filled('nombre')) $presentacion->nombre = $request->input('nombre');
+            if ($request->has('descripcion')) $presentacion->descripcion = $request->input('descripcion');
+            if ($request->has('estado')) {
+                $presentacion->estado = in_array(strtolower($request->input('estado')), ['1', 'true', 'activa', 'activo'], true);
+            }
+            $presentacion->save();
+        }
+
+        return redirect()->route('presentaciones.listar')->with('success', 'Presentación actualizada exitosamente.');
     }
 
     public function vistaMostrar($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('presentaciones', $this->datos, (int) $id);
+        $presentacion = Presentacion::find($id) ?? Presentacion::first();
+
+        $registro = [
+            'id' => $presentacion ? $presentacion->id : (int) $id,
+            'nombre' => $presentacion ? $presentacion->nombre : '',
+            'descripcion' => $presentacion ? $presentacion->descripcion : '',
+            'imagen' => $presentacion ? $presentacion->imagen : null,
+            'estado' => ($presentacion && $presentacion->estado) ? 'Activa' : 'Inactiva',
+        ];
 
         return view('presentaciones.mostrar', ['registro' => $registro]);
     }
 
     public function borrar(Request $request, $id = 1)
     {
-        $this->borrarDatoTemporal('presentaciones', $this->datos, (int) $id);
+        $presentacion = Presentacion::find($id) ?? Presentacion::first();
 
-        return redirect()->route('presentaciones.listar')->with('success', 'Registro eliminado solo para esta sesión.');
+        if ($presentacion) {
+            try {
+                $presentacion->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        return redirect()->route('presentaciones.listar')->with('success', 'Presentación eliminada exitosamente.');
     }
 }

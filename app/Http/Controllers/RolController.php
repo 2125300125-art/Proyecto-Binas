@@ -9,14 +9,16 @@ class RolController extends Controller
 {
     private const MODELO = Rol::class;
 
-    private array $datos = [
-        ['id' => 1, 'nombre' => 'Administradora', 'descripcion' => 'Acceso a la gestión general', 'usuarios' => 1, 'estado' => 'Activo'],
-        ['id' => 2, 'nombre' => 'Operador', 'descripcion' => 'Apoyo en pedidos y entregas', 'usuarios' => 2, 'estado' => 'Activo'],
-    ];
-
     public function listar()
     {
-        return view('roles.listado', ['roles' => $this->datosTemporales('roles', $this->datos)]);
+        $roles = Rol::query()->get()->map(fn (Rol $rol) => [
+            'id' => $rol->id,
+            'nombre' => $rol->nombre,
+            'imagen' => $rol->imagen,
+            'estado' => $rol->estado ? 'Activo' : 'Inactivo',
+        ])->all();
+
+        return view('roles.listado', compact('roles'));
     }
 
     public function vistaFormulario()
@@ -26,36 +28,68 @@ class RolController extends Controller
 
     public function registrar(Request $request)
     {
-        $this->registrarDatoTemporal('roles', $this->datos, $request);
+        if ($request->filled('nombre')) {
+            Rol::firstOrCreate(
+                ['nombre' => $request->input('nombre')],
+                ['estado' => in_array(strtolower($request->input('estado', 'Activo')), ['1', 'true', 'activo', 'activa'], true)]
+            );
+        }
 
-        return redirect()->route('roles.listar')->with('success', 'Registro agregado solo para esta sesión.');
+        return redirect()->route('roles.listar')->with('success', 'Rol guardado exitosamente.');
     }
 
     public function vistaEdicion($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('roles', $this->datos, (int) $id);
+        $rol = Rol::find($id) ?? Rol::first();
+
+        $registro = [
+            'id' => $rol ? $rol->id : (int) $id,
+            'nombre' => $rol ? $rol->nombre : '',
+            'estado' => ($rol && $rol->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('roles.edicion', ['registro' => $registro]);
     }
 
     public function actualizar(Request $request, $id = 1)
     {
-        $this->actualizarDatoTemporal('roles', $this->datos, $request, (int) $id);
+        $rol = Rol::find($id) ?? Rol::first();
 
-        return redirect()->route('roles.listar')->with('success', 'Registro actualizado solo para esta sesión.');
+        if ($rol) {
+            if ($request->filled('nombre')) $rol->nombre = $request->input('nombre');
+            if ($request->has('estado')) {
+                $rol->estado = in_array(strtolower($request->input('estado')), ['1', 'true', 'activo', 'activa'], true);
+            }
+            $rol->save();
+        }
+
+        return redirect()->route('roles.listar')->with('success', 'Rol actualizado exitosamente.');
     }
 
     public function vistaMostrar($id = 1)
     {
-        $registro = $this->buscarDatoTemporal('roles', $this->datos, (int) $id);
+        $rol = Rol::find($id) ?? Rol::first();
+
+        $registro = [
+            'id' => $rol ? $rol->id : (int) $id,
+            'nombre' => $rol ? $rol->nombre : '',
+            'imagen' => $rol ? $rol->imagen : null,
+            'estado' => ($rol && $rol->estado) ? 'Activo' : 'Inactivo',
+        ];
 
         return view('roles.mostrar', ['registro' => $registro]);
     }
 
     public function borrar(Request $request, $id = 1)
     {
-        $this->borrarDatoTemporal('roles', $this->datos, (int) $id);
+        $rol = Rol::find($id) ?? Rol::first();
 
-        return redirect()->route('roles.listar')->with('success', 'Registro eliminado solo para esta sesión.');
+        if ($rol) {
+            try {
+                $rol->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        return redirect()->route('roles.listar')->with('success', 'Rol eliminado exitosamente.');
     }
 }

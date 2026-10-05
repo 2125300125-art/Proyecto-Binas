@@ -15,7 +15,13 @@ class UserController extends Controller
 
     public function listar()
     {
-        return view('users.listado', ['users' => $this->datosTemporales('users', $this->datos)]);
+        $users = User::query()->get(['id', 'name', 'email'])->map(fn (User $user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ])->all();
+
+        return view('users.listado', compact('users'));
     }
 
     public function vistaFormulario()

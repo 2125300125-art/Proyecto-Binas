@@ -23,10 +23,12 @@ class ProductoController extends Controller
         $productos = Producto::query()->with(['categoria', 'marca', 'presentacion'])->get()->map(fn (Producto $producto) => [
             'id' => $producto->id,
             'nombre' => $producto->nombre,
+            'categoria' => $producto->categoria->nombre,
             'marca' => $producto->marca->nombre,
             'presentacion' => $producto->presentacion->nombre,
             'precio' => $producto->precio,
             'existencia' => $producto->existencia,
+            'imagen' => $producto->imagen,
             'estado' => $producto->estado ? 'Activo' : 'Inactivo',
         ])->all();
 
@@ -72,17 +74,21 @@ class ProductoController extends Controller
 
         $datos = $validator->validated();
 
-        if ($request->hasFile('imagen')) {
-            $ruta = $request->file('imagen')->store('productos', 'public');
+        $imagen = $request->file('imagen');
+        unset($datos['imagen']);
+
+        $producto = Producto::create($datos);
+
+        if ($imagen !== null) {
+            $nombreImagen = $producto->id . '.' . $imagen->extension();
+            $ruta = $imagen->storeAs('productos', $nombreImagen, 'public');
 
             if ($ruta === false) {
                 throw new \RuntimeException('No se pudo guardar la imagen del producto.');
             }
 
-            $datos['imagen'] = $ruta;
+            $producto->update(['imagen' => $ruta]);
         }
-
-        Producto::create($datos);
 
         return redirect()->route('productos.index')->with('mensaje', 'Registro guardado exitosamente.');
     }
