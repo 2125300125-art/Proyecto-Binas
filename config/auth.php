@@ -40,7 +40,13 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'administradores',
+        ],
     ],
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -65,11 +71,17 @@ return [
             'model' => App\Models\User::class,
         ],
 
+        'administradores' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Administrador::class,
+        ],
+    ],
+
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
-    ],
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -109,3 +121,5 @@ return [
     'password_timeout' => 10800,
 
 ];
+
+

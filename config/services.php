@@ -30,4 +30,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'imgbb' => [
+        'key' => env('IMGBB_API_KEY'),
+        'url' => env('IMGBB_API_URL', 'https://api.imgbb.com/1/upload'),
+    ],
+
 ];

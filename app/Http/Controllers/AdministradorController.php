@@ -42,7 +42,7 @@ class AdministradorController extends Controller
             'usuario' => $administrador->usuario,
             'rol' => $administrador->rol->nombre,
             'imagen' => $administrador->imagen,
-            'estado' => $administrador->estado ? 'Activo' : 'Inactivo',
+            'estado' => ($administrador->activo ?? $administrador->estado) ? 'Activo' : 'Inactivo',
         ])->all();
 
         return view('administradores.listado', compact('administradores'));
@@ -55,9 +55,18 @@ class AdministradorController extends Controller
 
     public function registrar(Request $request)
     {
+        if ($request->hasFile('imagen')) {
+            try {
+                $url = app(\App\Services\ImageUploadService::class)->subirImagen($request->file('imagen'));
+                $request->merge(['imagen' => $url]);
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors(['imagen' => $e->getMessage()])->withInput();
+            }
+        }
+
         $this->registrarDatoTemporal('administradores', $this->datos, $request);
 
-        return redirect()->route('administradores.listar')->with('success', 'Administrador agregado solo para esta sesión.');
+        return redirect()->route('administradores.listar')->with('success', 'Administrador agregado exitosamente.');
     }
 
     public function vistaEdicion($id = 1)
@@ -69,9 +78,18 @@ class AdministradorController extends Controller
 
     public function actualizar(Request $request, $id = 1)
     {
+        if ($request->hasFile('imagen')) {
+            try {
+                $url = app(\App\Services\ImageUploadService::class)->subirImagen($request->file('imagen'));
+                $request->merge(['imagen' => $url]);
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors(['imagen' => $e->getMessage()])->withInput();
+            }
+        }
+
         $this->actualizarDatoTemporal('administradores', $this->datos, $request, (int) $id);
 
-        return redirect()->route('administradores.listar')->with('success', 'Administrador actualizado solo para esta sesión.');
+        return redirect()->route('administradores.listar')->with('success', 'Administrador actualizado exitosamente.');
     }
 
     public function vistaMostrar($id = 1)

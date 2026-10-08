@@ -6,10 +6,13 @@
     <div class="space-y-8">
         <div>
             <p class="text-sm font-semibold uppercase tracking-widest text-cyan-600">Administración</p>
-            <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Panel de administrador
+            {{-- Aquí se recupera el nombre del Administrador desde el guard 'admin' --}}
+            <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Bienvenido(a), {{ Auth::guard('admin')->user()->nombre }} {{ Auth::guard('admin')->user()->apellidos }}
             </h1>
-            <p class="mt-2 max-w-2xl text-slate-500 dark:text-slate-400">Selecciona una sección para comenzar a gestionar la
-                distribuidora.</p>
+            <p class="mt-2 max-w-2xl text-slate-500 dark:text-slate-400">
+                Sesión activa con el usuario: <strong class="text-cyan-600">{{ Auth::guard('admin')->user()->usuario }}</strong>. Selecciona una sección para comenzar a gestionar la distribuidora.
+            </p>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
@@ -47,9 +50,9 @@
                     Productos</h2>
                 <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">Mantén actualizado el catálogo y
                     sus presentaciones.</p>
-                <span class="mt-5 inline-block text-sm font-semibold text-violet-700 dark:text-violet-300">Gestionar
-                    →</span>
+                <span class="mt-5 inline-block text-sm font-semibold text-violet-700 dark:text-violet-300">Gestionar →</span>
             </a>
         </div>
     </div>
 @endsection
+

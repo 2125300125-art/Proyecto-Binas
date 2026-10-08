@@ -9,19 +9,54 @@
 <body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <nav class="mx-auto flex max-w-7xl flex-wrap items-center justify-between p-4">
-            <a href="{{ url('/') }}" class="flex items-center gap-3">
+            <a href="{{ route('inicio') }}" class="flex items-center gap-3">
                 <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500 text-xl font-bold text-slate-950">A</span>
                 <span class="text-xl font-semibold">Distribuidora de Agua Potable</span>
             </a>
+
+            {{-- Identificación del Administrador y Botón de Salir (Rúbrica) --}}
+            @if(Auth::guard('admin')->check())
+                @php
+                    $adminActual = Auth::guard('admin')->user();
+                    $fotoPerfil = null;
+                    if (!empty($adminActual->imagen)) {
+                        $fotoPerfil = \Illuminate\Support\Str::startsWith($adminActual->imagen, ['http://', 'https://'])
+                            ? $adminActual->imagen
+                            : asset('storage/' . $adminActual->imagen);
+                    }
+                @endphp
+                <div class="flex items-center gap-4 order-last md:order-none">
+                    <div class="flex items-center gap-3">
+                        @if($fotoPerfil)
+                            <img src="{{ $fotoPerfil }}" alt="Avatar" class="h-9 w-9 rounded-full object-cover border-2 border-cyan-500 shadow-sm" referrerpolicy="no-referrer">
+                        @endif
+                        <div class="text-right">
+                            <span class="block text-xs font-semibold text-cyan-600 dark:text-cyan-400">ADMINISTRADOR</span>
+                            <span class="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                {{ $adminActual->nombre }} {{ $adminActual->apellidos }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" 
+                            class="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-600 hover:text-white transition dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <button data-collapse-toggle="admin-navbar" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 md:hidden" aria-controls="admin-navbar" aria-expanded="false">
                 <span class="sr-only">Abrir menú</span>
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
+
             <div id="admin-navbar" class="hidden w-full md:block md:w-auto">
                 <ul class="mt-4 grid grid-cols-2 gap-2 font-medium md:mt-0 md:flex md:flex-wrap md:items-center md:gap-4">
-                    <li><a href="{{ url('/') }}" class="hover:text-cyan-700">Inicio</a></li>
                     <li><a href="{{ route('inicio') }}" class="hover:text-cyan-700">Panel</a></li>
-                    @foreach (['administradores' => 'Administradores', 'productos' => 'Productos', 'productos_pedido' => 'Productos por pedido', 'clientes' => 'Clientes', 'pedidos' => 'Pedidos', 'repartidores' => 'Repartidores', 'entregas' => 'Entregas', 'categorias' => 'Categorías', 'marcas' => 'Marcas', 'presentaciones' => 'Presentaciones', 'direcciones' => 'Direcciones', 'metodos_pago' => 'Métodos de pago', 'roles' => 'Roles', 'users' => 'Usuarios'] as $modulo => $etiqueta)
+                    @foreach (['administradores' => 'Administradores', 'productos' => 'Productos', 'clientes' => 'Clientes', 'pedidos' => 'Pedidos', 'repartidores' => 'Repartidores', 'entregas' => 'Entregas', 'categorias' => 'Categorías', 'marcas' => 'Marcas', 'presentaciones' => 'Presentaciones'] as $modulo => $etiqueta)
                         <li><a href="{{ route($modulo . '.listar') }}" class="hover:text-cyan-700">{{ $etiqueta }}</a></li>
                     @endforeach
                 </ul>

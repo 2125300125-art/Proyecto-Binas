@@ -58,6 +58,15 @@ class ClienteController extends Controller
         $datos = $validator->validated();
         $datos['contraseña'] = Hash::make($datos['contraseña']);
         $datos['estado'] = true;
+
+        if ($request->hasFile('imagen')) {
+            try {
+                $datos['imagen'] = app(\App\Services\ImageUploadService::class)->subirImagen($request->file('imagen'));
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors(['imagen' => $e->getMessage()])->withInput();
+            }
+        }
+
         Cliente::create($datos);
 
         return redirect()->route('clientes.index')->with('mensaje', 'Registro guardado exitosamente.');
@@ -73,6 +82,7 @@ class ClienteController extends Controller
             'apellidos' => $cliente ? $cliente->apellidos : '',
             'correo' => $cliente ? $cliente->correo : '',
             'telefono' => $cliente ? $cliente->telefono : '',
+            'imagen' => $cliente ? $cliente->imagen : null,
             'estado' => ($cliente && $cliente->estado) ? 'Activo' : 'Inactivo',
         ];
 
@@ -93,6 +103,13 @@ class ClienteController extends Controller
             }
             if ($request->filled('contraseña')) {
                 $cliente->contraseña = Hash::make($request->input('contraseña'));
+            }
+            if ($request->hasFile('imagen')) {
+                try {
+                    $cliente->imagen = app(\App\Services\ImageUploadService::class)->subirImagen($request->file('imagen'));
+                } catch (\Exception $e) {
+                    return redirect()->back()->withErrors(['imagen' => $e->getMessage()])->withInput();
+                }
             }
             $cliente->save();
         }
